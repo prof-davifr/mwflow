@@ -16,11 +16,12 @@ paridade cobra 55 casos de concordância entre elas.
 
 O passo a passo completo para uma máquina nova, no Linux e no Windows, está
 **dentro do programa**: tela *Curva de calibração*, botão **Manual**. Ele vale
-também na página publicada, antes de instalar qualquer coisa. O resumo:
+também na página publicada — <https://prof-davifr.github.io/mwflow/> —, antes
+de instalar qualquer coisa. O resumo:
 
 Sem instalar nada, no Chrome, no Edge ou no Opera de desktop:
 
-1. Abra a página publicada.
+1. Abra <https://prof-davifr.github.io/mwflow/>.
 2. Clique em **Ligar o LiteVNA64 pela porta USB**, ou em **Abrir a bancada
    simulada** para ver o programa funcionar sem aparelho.
 
@@ -48,7 +49,7 @@ sudo udevadm control --reload && sudo udevadm trigger
 
 Desconecte e reconecte o cabo USB depois disso. A porta deve ficar `crw-rw-rw-`.
 
-Nenhuma dependência precisa ser instalada nesta máquina. Confira com:
+Confira a instalação com:
 
 ```bash
 python3 -c "import numpy, scipy, serial, starlette, uvicorn; print('ok')"
