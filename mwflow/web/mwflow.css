@@ -210,6 +210,11 @@ tr.fora td { opacity: .4; text-decoration: line-through; }
 #cartao-aparelho h2 { margin: 0 0 8px; font-size: 17px; color: var(--seq4); }
 #cartao-aparelho p { margin: 6px 0 14px; font-size: 13px; }
 #cartao-aparelho button { width: 100%; padding: 9px; margin-bottom: 4px; }
+/* O `.oculto` sozinho NÃO apaga este cartão: um seletor de id pesa mais que um
+   de classe, e o `display: flex` de cima venceria. Sem esta linha o cartão
+   continua cobrindo a tela inteira depois de o usuário escolher o aparelho, e
+   a versão de navegador fica inutilizável. */
+#cartao-aparelho.oculto { display: none; }
 
 /* -------------------------------------------------------------- rodapé */
 #rodape {
