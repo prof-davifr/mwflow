@@ -1,0 +1,224 @@
+/* Paleta da casa — a mesma de sensor_etanol/figuras_artigo.py, para as telas
+   e as figuras do artigo falarem a mesma língua.
+   Rampa sequencial: grandezas ordenadas. Par categórico: identidades. */
+:root {
+  --seq1:#7ec8d8; --seq2:#3ba3bd; --seq3:#0f7d99; --seq4:#08536b;
+  --cat1:#0089a8; --cat2:#a53c74;
+  --tinta:#22262b; --tinta2:#6b7280;
+  --grade:#e4e6ea; --fundo:#ffffff; --fundo2:#f7f8fa;
+  --alerta:#a53c74; --bom:#0f7d99;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0; background: var(--fundo2); color: var(--tinta);
+  font: 14px/1.45 system-ui, "Segoe UI", Roboto, sans-serif;
+  display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+}
+
+/* ------------------------------------------------------------ cabeçalho */
+#barra {
+  display: flex; align-items: center; gap: 16px;
+  padding: 8px 14px; background: var(--fundo);
+  border-bottom: 1px solid var(--grade); flex: 0 0 auto;
+}
+#barra h1 { font-size: 17px; margin: 0; letter-spacing: .5px; color: var(--seq4); }
+#abas { display: flex; gap: 4px; flex: 1 1 auto; min-width: 0; }
+#abas button {
+  border: 1px solid transparent; background: none; cursor: pointer;
+  padding: 6px 12px; border-radius: 6px; color: var(--tinta2); font-size: 13px;
+}
+#abas button:hover { background: var(--fundo2); }
+#abas button.ativa { background: var(--seq4); color: #fff; }
+#selos { display: flex; gap: 6px; flex: 0 0 auto; }
+.selo {
+  font-size: 12px; padding: 3px 9px; border-radius: 999px;
+  background: var(--fundo2); border: 1px solid var(--grade); color: var(--tinta2);
+  white-space: nowrap;
+}
+.selo.ok { background: #e8f4f7; border-color: var(--seq2); color: var(--seq4); }
+.selo.mau { background: #f9ecf2; border-color: var(--cat2); color: var(--cat2); }
+.selo.simulado { background: var(--cat2); color: #fff; border-color: var(--cat2); }
+
+/* ---------------------------------------------------------------- corpo */
+#corpo { display: flex; flex: 1 1 auto; min-height: 0; }
+
+#painel {
+  width: 250px; flex: 0 0 250px; background: var(--fundo);
+  border-right: 1px solid var(--grade); padding: 12px; overflow-y: auto;
+}
+#painel h2 {
+  font-size: 12px; text-transform: uppercase; letter-spacing: .8px;
+  color: var(--tinta2); margin: 16px 0 8px; font-weight: 600;
+}
+#painel h2:first-child { margin-top: 0; }
+fieldset { border: 1px solid var(--grade); border-radius: 6px; padding: 8px; margin: 8px 0; }
+legend { font-size: 11px; color: var(--tinta2); padding: 0 4px; }
+.campo { margin-bottom: 8px; }
+.campo label { display: block; font-size: 12px; color: var(--tinta2); margin-bottom: 3px; }
+.dupla { display: flex; gap: 4px; }
+.dupla input { width: 50%; }
+
+input, select, button, textarea {
+  font: inherit; font-size: 13px; padding: 5px 7px;
+  border: 1px solid var(--grade); border-radius: 5px;
+  background: var(--fundo); color: var(--tinta);
+}
+input[type=number], select { width: 100%; }
+.linha-controles input[type=number],
+.linha-controles select,
+.captura input, .captura select { width: auto; }
+input[type=checkbox] { width: auto; }
+/* Campo editado e ainda não aplicado. O valor na tela não é o do aparelho. */
+input.sujo, select.sujo {
+  border-color: var(--alerta);
+  box-shadow: inset 3px 0 0 var(--alerta);
+}
+button { cursor: pointer; background: var(--fundo2); }
+button:hover { background: var(--grade); }
+button.primario { background: var(--seq4); color: #fff; border-color: var(--seq4); }
+button.primario:hover { background: var(--seq3); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+#aplicar { width: 100%; margin-top: 8px; }
+
+.nota { font-size: 11.5px; color: var(--tinta2); line-height: 1.4; }
+#aviso-hw { margin-top: 14px; padding: 8px; background: var(--fundo2);
+            border-left: 3px solid var(--seq2); border-radius: 0 4px 4px 0; }
+
+/* ---------------------------------------------------------------- telas */
+#telas { flex: 1 1 auto; min-width: 0; overflow: auto; padding: 12px; }
+.tela { display: none; }
+.tela.ativa { display: block; }
+
+.linha-controles {
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 10px; font-size: 12.5px; color: var(--tinta2);
+}
+.linha-controles label { display: flex; align-items: center; gap: 4px; }
+
+.grafico {
+  background: var(--fundo); border: 1px solid var(--grade); border-radius: 6px;
+  padding: 8px; height: 420px; margin-bottom: 10px;
+}
+.grafico.baixo { height: 250px; }
+.canvas-host { position: relative; padding: 0; overflow: hidden; }
+.canvas-host canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+#esp-canvas { image-rendering: pixelated; }
+
+.leitura {
+  background: var(--fundo); border: 1px solid var(--grade); border-radius: 6px;
+  padding: 10px 12px; font-size: 13px;
+  font-variant-numeric: tabular-nums; line-height: 1.7;
+}
+.leitura .rot { color: var(--tinta2); margin-right: 4px; }
+.leitura .val { font-weight: 600; color: var(--seq4); margin-right: 16px; }
+.leitura .mau { color: var(--cat2); }
+.leitura-inline { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--seq4); }
+
+.duas-colunas { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; }
+@media (max-width: 1200px) { .duas-colunas { grid-template-columns: minmax(0,1fr); } }
+
+/* Definição da curva: quem é o X, quem é a covariável. Fica visualmente
+   separada dos controles de operação porque é a única linha da tela que muda o
+   SIGNIFICADO do que vem depois. */
+.linha-controles.definicao {
+  background: var(--fundo); border: 1px solid var(--grade);
+  border-left: 3px solid var(--seq2); border-radius: 0 6px 6px 0;
+  padding: 8px 10px;
+}
+.linha-controles.definicao label { flex-direction: row; }
+
+.captura {
+  display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;
+  background: var(--fundo); border: 1px solid var(--grade);
+  border-radius: 6px; padding: 10px; margin-bottom: 10px;
+}
+.captura label { display: flex; flex-direction: column; font-size: 11.5px; color: var(--tinta2); gap: 3px; }
+.captura input { width: 92px; }
+
+table { border-collapse: collapse; width: 100%; font-size: 12.5px;
+        font-variant-numeric: tabular-nums; background: var(--fundo); margin-top: 10px; }
+th, td { border-bottom: 1px solid var(--grade); padding: 4px 7px; text-align: right; }
+th { color: var(--tinta2); font-weight: 600; font-size: 11.5px;
+     text-transform: uppercase; letter-spacing: .4px; }
+td:first-child, th:first-child { text-align: center; }
+tr.fora td { opacity: .4; text-decoration: line-through; }
+
+/* -------------------------------------------------------- calibração */
+.passos-cal { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.passo {
+  background: var(--fundo); border: 1px solid var(--grade); border-radius: 6px;
+  padding: 10px; flex: 1 1 170px; min-width: 0;
+}
+.passo h3 { margin: 0 0 4px; font-size: 14px; color: var(--seq4); }
+.passo p { margin: 0 0 8px; font-size: 11.5px; color: var(--tinta2); }
+.passo.feito { border-color: var(--seq2); background: #f4fafc; }
+.passo .marca { font-size: 11.5px; color: var(--seq3); margin-left: 6px; }
+
+/* ------------------------------------------------------------- manual */
+.manual {
+  background: var(--fundo); border: 1px solid var(--grade);
+  border-radius: 6px; margin-top: 12px; padding: 0 12px;
+}
+.manual > summary {
+  cursor: pointer; padding: 10px 0; font-weight: 600; color: var(--seq4);
+  font-size: 13.5px;
+}
+.manual[open] > summary { border-bottom: 1px solid var(--grade); }
+#manual-corpo { padding: 4px 0 16px; max-width: 78ch; }
+#manual-corpo h3 {
+  font-size: 13px; text-transform: uppercase; letter-spacing: .8px;
+  color: var(--seq4); margin: 20px 0 6px;
+}
+#manual-corpo h4 { font-size: 13px; margin: 14px 0 4px; color: var(--tinta); }
+#manual-corpo p { margin: 4px 0 8px; color: var(--tinta2); font-size: 13px; }
+#manual-corpo ol, #manual-corpo ul { margin: 4px 0 8px; padding-left: 22px; }
+#manual-corpo li { margin-bottom: 6px; font-size: 13px; }
+#manual-corpo code {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 12px; background: var(--fundo2); border: 1px solid var(--grade);
+  border-radius: 4px; padding: 1px 4px; white-space: nowrap;
+}
+#manual-corpo dl { margin: 6px 0; }
+#manual-corpo dt {
+  font-weight: 600; color: var(--seq4); margin-top: 10px; font-size: 13px;
+}
+#manual-corpo dd { margin: 2px 0 0; font-size: 13px; }
+/* O campo que tem dica avisa que tem: a definição inteira sai no `title`.
+   O botão fica de fora — nele o ponteiro tem de continuar dizendo "clique". */
+[data-termo]:not(button) { cursor: help; }
+
+.aviso {
+  background: #f9ecf2; border-left: 3px solid var(--cat2);
+  padding: 10px 12px; border-radius: 0 4px 4px 0; margin-top: 10px; font-size: 13px;
+}
+.oculto { display: none; }
+
+/* Cartão de escolha do aparelho, só no modo local. Ele cobre a página até
+   alguém dizer de onde vem a medida: um programa de instrumento não pode
+   começar a produzir número antes disso. */
+#cartao-aparelho {
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(34, 38, 43, .55);
+  display: flex; align-items: center; justify-content: center;
+}
+#cartao-aparelho .cartao {
+  background: var(--fundo); border: 1px solid var(--grade); border-radius: 10px;
+  padding: 22px 24px; max-width: 440px; box-shadow: 0 8px 30px rgba(0,0,0,.18);
+}
+#cartao-aparelho h2 { margin: 0 0 8px; font-size: 17px; color: var(--seq4); }
+#cartao-aparelho p { margin: 6px 0 14px; font-size: 13px; }
+#cartao-aparelho button { width: 100%; padding: 9px; margin-bottom: 4px; }
+
+/* -------------------------------------------------------------- rodapé */
+#rodape {
+  flex: 0 0 auto; display: flex; justify-content: space-between;
+  padding: 4px 14px; background: var(--fundo); border-top: 1px solid var(--grade);
+  font-size: 11.5px; color: var(--tinta2);
+}
+
+/* --------------------------------------------------------------- uPlot */
+.u-legend { font-size: 12px; }
+.u-legend .u-marker { width: 12px; height: 3px; border-radius: 0; }
+.u-select { background: rgba(15,125,153,.12); }

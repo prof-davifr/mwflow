@@ -1,0 +1,65 @@
+# Publica a interface do MWFlow no GitHub Pages.
+#
+# O QUE VAI PARA O AR: só a pasta `mwflow/web`. Ela é a versão de navegador —
+# HTML, CSS e o núcleo em JavaScript, que fala com o LiteVNA64 pelo WebSerial.
+# O servidor em Python NÃO vai para o ar, e não precisa: no Pages a página é
+# estática e o programa roda inteiro na máquina de quem abrir.
+#
+# ANTES DE LIGAR ISTO, no repositório: Settings > Pages > Source = GitHub
+# Actions. Sem esse passo o fluxo falha no `deploy-pages` com "Pages not
+# enabled".
+#
+# O teste de paridade roda antes da publicação. Se o núcleo em JavaScript
+# divergir do MWFlow em Python, nada é publicado: é melhor a página ficar
+# velha do que servir um instrumento que mede diferente do original.
+
+name: pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  paridade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: instala o que o lado Python precisa
+        run: pip install numpy scipy pyserial
+      - name: gera os vetores de referência
+        run: python3 -m testes.vetores
+      - name: paridade entre o JavaScript e o Python
+        run: node testes/paridade.mjs
+      - name: SOLT sintético
+        run: python3 -m testes.teste_solt
+
+  publica:
+    needs: paridade
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: mwflow/web
+      - id: deploy
+        uses: actions/deploy-pages@v4

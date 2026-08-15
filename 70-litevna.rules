@@ -1,0 +1,21 @@
+# LiteVNA64 / NanoVNA-V2 — Cypress FX2 CDC-ACM (04b4:0008)
+#
+# Instale com:
+#   sudo cp 70-litevna.rules /etc/udev/rules.d/
+#   sudo rm -f /etc/udev/rules.d/99-litevna.rules
+#   sudo udevadm control --reload && sudo udevadm trigger
+#
+# Por que 70 e não 99: o builtin que transforma a etiqueta `uaccess` em uma ACL
+# para o usuário da sessão mora em /usr/lib/udev/rules.d/73-seat-late.rules. Uma
+# regra em 99 adiciona a etiqueta tarde demais para esse builtin a enxergar. O
+# MODE=0666 funciona de qualquer forma, mas a numeração 70 é a correta e faz a
+# ACL valer também.
+#
+# ID_MM_DEVICE_IGNORE: o ModemManager está ativo nesta máquina e marca este
+# aparelho com ID_MM_CANDIDATE=1. Ele sonda portas CDC-ACM com comandos AT logo
+# depois do plugue. Esses bytes entram no interpretador binário do LiteVNA e o
+# deixam no meio de um comando. Esta linha manda o ModemManager ignorar a porta.
+
+SUBSYSTEM=="tty", ATTRS{idVendor}=="04b4", ATTRS{idProduct}=="0008", \
+  TAG+="uaccess", MODE="0666", ENV{ID_MM_DEVICE_IGNORE}="1", \
+  SYMLINK+="litevna"

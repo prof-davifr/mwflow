@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MWFlow — LiteVNA64</title>
+<link rel="stylesheet" href="vendor/uPlot.min.css">
+<link rel="stylesheet" href="mwflow.css">
+</head>
+<body>
+
+<header id="barra">
+  <h1>MWFlow</h1>
+  <nav id="abas">
+    <button data-tela="varredura" class="ativa">Varredura</button>
+    <button data-tela="osciloscopio">Osciloscópio</button>
+    <button data-tela="espectrograma">Espectrograma</button>
+    <button data-tela="curva">Curva de calibração</button>
+    <button data-tela="calibracao">Calibração SOLT</button>
+  </nav>
+  <div id="selos">
+    <span id="selo-aparelho" class="selo">—</span>
+    <span id="selo-cal" class="selo">sem cal</span>
+    <span id="selo-taxa" class="selo">—</span>
+  </div>
+</header>
+
+<div id="corpo">
+
+<aside id="painel">
+  <h2>Aparelho</h2>
+  <div class="campo">
+    <label>Modo</label>
+    <select id="modo">
+      <option value="varredura">Varredura</option>
+      <option value="cw">Frequência fixa</option>
+      <option value="parado">Parado</option>
+    </select>
+  </div>
+
+  <fieldset id="grupo-varredura">
+    <legend>Varredura</legend>
+    <div class="campo"><label>Início (MHz)</label><input id="f-inicio" type="number" step="0.001" value="50"></div>
+    <div class="campo"><label>Fim (MHz)</label><input id="f-fim" type="number" step="0.001" value="3000"></div>
+    <div class="campo"><label>Pontos</label>
+      <select id="pontos">
+        <option>51</option><option>101</option><option>201</option>
+        <option selected>401</option><option>801</option><option>1024</option>
+      </select>
+    </div>
+  </fieldset>
+
+  <fieldset id="grupo-cw">
+    <legend>Frequência fixa</legend>
+    <div class="campo"><label>Frequência (MHz)</label><input id="f-cw" type="number" step="0.001" value="1500"></div>
+  </fieldset>
+
+  <div class="campo"><label>Valores por frequência</label>
+    <select id="vpf"><option>1</option><option>2</option><option>4</option><option>8</option></select>
+  </div>
+  <div class="campo"><label>Varreduras a promediar</label>
+    <select id="medias"><option>1</option><option>2</option><option>4</option><option>8</option><option>16</option></select>
+  </div>
+
+  <h2>Grandeza</h2>
+  <div class="campo"><label>Parâmetro</label>
+    <select id="param"><option value="s21">S21</option><option value="s11">S11</option></select>
+  </div>
+  <div class="campo"><label>Banda do ajuste (MHz)</label>
+    <div class="dupla">
+      <input id="banda-lo" type="number" step="0.1" value="1300">
+      <input id="banda-hi" type="number" step="0.1" value="2000">
+    </div>
+  </div>
+
+  <button id="aplicar" class="primario">Aplicar</button>
+  <p id="aviso-hw" class="nota">
+    O LiteVNA64 não tem chave de reversão: ele mede <strong>S11 e S21</strong>.
+    S12 e S22 exigem inverter o dispositivo na bancada.
+  </p>
+</aside>
+
+<main id="telas">
+
+  <!-- ------------------------------------------------ varredura -->
+  <section class="tela ativa" id="tela-varredura">
+    <div class="linha-controles">
+      <label>Formato
+        <select id="formato-varredura">
+          <option value="mag_db" selected>|S| (dB)</option>
+          <option value="mag_lin">|S| linear</option>
+          <option value="fase_deg">Fase</option>
+          <option value="fase_desdobrada">Fase desdobrada</option>
+          <option value="vswr">VSWR</option>
+          <option value="z_re">Re(Z)</option>
+          <option value="z_im">Im(Z)</option>
+          <option value="atraso_grupo">Atraso de grupo</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="mostra-s11" checked> S11</label>
+      <label><input type="checkbox" id="mostra-s21" checked> S21</label>
+      <label><input type="checkbox" id="mostra-ajuste" checked> Modelo ajustado</label>
+      <label><input type="checkbox" id="reter-max"> Reter máximo</label>
+      <button id="congela-varredura">Congelar</button>
+      <button id="salva-varredura">Salvar varredura</button>
+    </div>
+    <div id="g-varredura" class="grafico"></div>
+    <div id="leitura-ajuste" class="leitura"></div>
+  </section>
+
+  <!-- --------------------------------------------- osciloscópio -->
+  <section class="tela" id="tela-osciloscopio">
+    <div class="linha-controles">
+      <label>Grandeza <select id="obs-osc"></select></label>
+      <label>Janela
+        <select id="janela-osc">
+          <option value="10">10 s</option>
+          <option value="60" selected>1 min</option>
+          <option value="600">10 min</option>
+          <option value="0">tudo</option>
+        </select>
+      </label>
+      <button id="pausa-osc">Pausar</button>
+      <button id="limpa-osc">Limpar</button>
+      <button id="marca-evento">Marcar evento</button>
+      <span id="dica-osc" class="nota"></span>
+    </div>
+    <div id="g-osciloscopio" class="grafico"></div>
+    <div id="leitura-osc" class="leitura"></div>
+  </section>
+
+  <!-- -------------------------------------------- espectrograma -->
+  <section class="tela" id="tela-espectrograma">
+    <div class="linha-controles">
+      <label>Histórico
+        <select id="hist-esp"><option>300</option><option selected>600</option><option>1800</option><option>3600</option></select>
+      </label>
+      <label>Escala
+        <select id="escala-esp"><option value="auto" selected>automática (5–95 %)</option><option value="manual">manual</option></select>
+      </label>
+      <label>dB mín <input id="esp-min" type="number" value="-90" step="1"></label>
+      <label>dB máx <input id="esp-max" type="number" value="0" step="1"></label>
+      <label>Cores
+        <select id="mapa-esp"><option value="casa" selected>da casa</option><option value="viridis">viridis</option><option value="cinza">cinza</option></select>
+      </label>
+      <button id="limpa-esp">Limpar</button>
+    </div>
+    <div id="g-espectrograma" class="grafico canvas-host">
+      <canvas id="esp-canvas"></canvas>
+      <canvas id="esp-eixos"></canvas>
+    </div>
+    <div id="leitura-esp" class="leitura"></div>
+  </section>
+
+  <!-- ------------------------------------------------ curva -->
+  <section class="tela" id="tela-curva">
+    <div class="linha-controles">
+      <label data-termo="curva">Curva <select id="curva-lista"></select></label>
+      <button id="curva-nova" data-termo="curva-nova">Nova curva</button>
+      <button id="curva-planejar" data-termo="plano">Planejar série</button>
+      <button id="curva-manual" data-termo="manual">Manual</button>
+    </div>
+
+    <!-- Definição da curva. Nada aqui é uma grandeza fixa: o operador diz o
+         que é o X e o que é a covariável, e o resto da tela obedece. -->
+    <div class="linha-controles definicao">
+      <label data-termo="grandeza-y">Grandeza Y <select id="obs-curva"></select></label>
+      <label data-termo="grandeza-x">Grandeza X
+        <input id="curva-grandeza" type="text" value="concentração" size="12"></label>
+      <label data-termo="unidade-x">Unidade de X
+        <input id="curva-unidade" type="text" value="%vol" size="6"></label>
+      <label data-termo="covariavel">Covariável
+        <input id="curva-cov" type="text" value="temperatura" size="11"></label>
+      <label data-termo="unidade-cov">Unidade da covariável
+        <input id="curva-cov-unidade" type="text" value="°C" size="5"></label>
+      <label data-termo="cov-exigida">
+        <input type="checkbox" id="curva-cov-exigida" checked> exigir a covariável</label>
+    </div>
+
+    <div class="captura">
+      <label data-termo="x"><span id="rot-cap-x">X</span>
+        <input id="cap-x" type="number" step="any"></label>
+      <label data-termo="cov"><span id="rot-cap-cov">Covariável</span>
+        <input id="cap-cov" type="number" step="any"></label>
+      <label data-termo="replica">Réplica <input id="cap-rep" type="text" value="A" size="3"></label>
+      <label data-termo="ordem">Ordem <input id="cap-ordem" type="number" step="1" size="3"></label>
+      <label data-termo="x-ref">Referência cruzada <input id="cap-ref" type="number" step="any" size="6"></label>
+      <label data-termo="n-med">Medidas <input id="cap-n" type="number" value="5" min="1" max="64" size="3"></label>
+      <label data-termo="nota">Nota <input id="cap-nota" type="text" size="14"></label>
+      <button id="cap-botao" class="primario" data-termo="ponto">Capturar ponto</button>
+      <span id="cap-estado" class="nota"></span>
+    </div>
+
+    <div class="duas-colunas">
+      <div>
+        <div id="g-curva" class="grafico baixo"></div>
+        <div class="linha-controles">
+          <label data-termo="residuo">Resíduo contra
+            <select id="resid-eixo">
+              <option value="ordem" selected>ordem de execução</option>
+              <option value="cov">a covariável</option>
+            </select>
+          </label>
+        </div>
+        <div id="g-residuos" class="grafico baixo"></div>
+      </div>
+      <div>
+        <div class="linha-controles">
+          <label data-termo="ajuste">Ajuste
+            <select id="tipo-ajuste">
+              <option value="linear" selected>linear</option>
+              <option value="poli2">polinomial grau 2</option>
+              <option value="poli3">polinomial grau 3</option>
+              <option value="covariavel">linear com a covariável</option>
+            </select>
+          </label>
+          <label data-termo="faixa">Faixa X <input id="faixa-lo" type="number" step="any" size="5"> a <input id="faixa-hi" type="number" step="any" size="5"></label>
+          <label data-termo="sigma">σ de Y
+            <select id="sigma-origem">
+              <option value="medida" selected>medida (réplicas)</option>
+              <option value="assumida">assumida</option>
+            </select>
+            <input id="sigma-valor" type="number" step="any" value="1" size="5">
+          </label>
+          <button id="curva-ajustar" class="primario" data-termo="ajuste">Ajustar</button>
+          <button id="curva-r2" data-termo="varredura-r2">Varredura de R²</button>
+        </div>
+        <div id="curva-numeros" class="leitura"></div>
+        <div id="g-r2" class="grafico baixo"></div>
+        <table id="tabela-pontos"><thead><tr>
+          <th data-termo="excluir">usar</th><th data-termo="x">X</th>
+          <th data-termo="grandeza-y">Y</th><th data-termo="sigma">σ</th>
+          <th data-termo="n-med">n</th><th data-termo="cov" id="col-cov">cov.</th>
+          <th data-termo="replica">rép.</th><th data-termo="ordem">ordem</th>
+          <th>hora</th><th></th>
+        </tr></thead><tbody></tbody></table>
+        <div class="linha-controles">
+          <button id="curva-csv" data-termo="csv">Exportar CSV</button>
+          <button id="curva-figura">Exportar figura</button>
+          <label data-termo="inversa">Previsão inversa <input type="checkbox" id="inversa-liga"></label>
+          <span id="inversa-saida" class="leitura-inline"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- O manual da tela. O texto mora no `js/manual.js`, e é o MESMO que
+         alimenta as dicas de cada campo: uma definição só, num lugar só. -->
+    <details id="manual-curva" class="manual">
+      <summary>Manual — instalação, preparação do experimento e glossário</summary>
+      <div id="manual-corpo"></div>
+    </details>
+  </section>
+
+  <!-- ------------------------------------------- calibração -->
+  <section class="tela" id="tela-calibracao">
+    <div class="linha-controles">
+      <label>Kit <select id="cal-kit"></select></label>
+      <label>Nome <input id="cal-nome" type="text" size="18"></label>
+      <label>Medidas por padrão <input id="cal-medias" type="number" value="16" min="1" max="64" size="3"></label>
+      <span id="cal-estado" class="nota"></span>
+    </div>
+
+    <div class="passos-cal">
+      <div class="passo" data-padrao="aberto"><h3>Aberto</h3><p>Ligue o padrão ABERTO na porta 1.</p><button>Medir</button><span class="marca"></span></div>
+      <div class="passo" data-padrao="curto"><h3>Curto</h3><p>Ligue o padrão CURTO na porta 1.</p><button>Medir</button><span class="marca"></span></div>
+      <div class="passo" data-padrao="carga"><h3>Carga</h3><p>Ligue a CARGA de 50 Ω na porta 1.</p><button>Medir</button><span class="marca"></span></div>
+      <div class="passo" data-padrao="thru"><h3>Thru</h3><p>Ligue a porta 1 na porta 2.</p><button>Medir</button><span class="marca"></span></div>
+      <div class="passo" data-padrao="isolamento"><h3>Isolamento</h3><p>Cargas nas DUAS portas. Opcional.</p><button>Medir</button><span class="marca"></span></div>
+    </div>
+
+    <div class="linha-controles">
+      <button id="cal-resolver" class="primario">Resolver e salvar</button>
+      <button id="cal-aplicar">Aplicar</button>
+      <button id="cal-remover">Medir sem calibração</button>
+      <label>Conjunto <select id="cal-lista"></select></label>
+    </div>
+
+    <h2>Colchete da sessão</h2>
+    <p class="nota">
+      Uma série gravimétrica leva horas e o aparelho deriva com a temperatura.
+      Ao encerrar, meça os padrões de novo: a reverificação diz quanto o
+      instrumento andou, e uma segunda calibração completa permite corrigir a
+      deriva em vez de apenas medi-la.
+    </p>
+    <div class="linha-controles">
+      <button id="cal-reverificar">Reverificar agora</button>
+      <button id="cal-segunda">Segunda calibração (fim da sessão)</button>
+      <label>Modo de correção
+        <select id="cal-modo">
+          <option value="inicial" selected>inicial</option>
+          <option value="final">final</option>
+          <option value="interpolado">interpolado no tempo</option>
+        </select>
+      </label>
+    </div>
+    <div id="cal-numeros" class="leitura"></div>
+    <div id="cal-aviso" class="aviso oculto"></div>
+  </section>
+
+</main>
+</div>
+
+<div id="rodape">
+  <span id="mensagem"></span>
+  <span id="quedas"></span>
+</div>
+
+<!--MODO-->
+<script src="vendor/uPlot.iife.min.js"></script>
+<script src="js/util.js"></script>
+<script src="js/manual.js"></script>
+<script src="js/ws.js"></script>
+<script src="js/tela_varredura.js"></script>
+<script src="js/tela_osciloscopio.js"></script>
+<script src="js/espectrograma.js"></script>
+<script src="js/tela_curva.js"></script>
+<script src="js/tela_calibracao.js"></script>
+<script src="js/app.js"></script>
+<!-- Núcleo local. Quando o servidor em Python serve esta página, ele troca o
+     marcador MODO acima por uma declaração de modo, e este módulo sai de cena
+     sozinho: quem manda ali é o WebSocket. Servida como arquivo estático (por
+     exemplo pelo GitHub Pages), a página roda o MWFlow inteiro aqui dentro. -->
+<script type="module" src="js/nucleo/local.js"></script>
+</body>
+</html>

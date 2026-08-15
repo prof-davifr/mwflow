@@ -1,0 +1,22 @@
+__pycache__/
+*.pyc
+sessoes/
+cals/
+runs/
+*.db
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.npz
+*.log
+
+# Números medidos desta bancada, que o simulador usa quando o arquivo existe.
+# O sensor de etanol aguarda depósito no INPI e este repositório é público:
+# f0, Q, IL e o ruído rms do ressoador real não podem sair daqui. Sem o
+# arquivo o simulador usa valores genéricos e nada quebra.
+mwflow/vna/bancada.py
+
+# Vetores de referência da paridade. Eles são GERADOS pelo Python
+# (`python3 -m testes.vetores`), e um arquivo gerado versionado é um convite a
+# alguém "consertar" o teste editando a resposta.
+testes/_vetores.json

@@ -1,0 +1,6 @@
+{
+  "name": "mwflow-nucleo",
+  "private": true,
+  "type": "module",
+  "description": "Marca a pasta como ESM. O node precisa disto para importar os .js do nucleo; o navegador nao le este arquivo."
+}

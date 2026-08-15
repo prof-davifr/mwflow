@@ -1,0 +1,15 @@
+# Todas já presentes nesta máquina (python 3.12.12 do pyenv).
+# Este arquivo documenta o mínimo; não instale nada sem necessidade.
+numpy>=2.0
+scipy>=1.14
+pyserial>=3.5
+starlette>=1.0
+uvicorn>=0.30
+
+# NÃO usamos FastAPI. A instalação global dela está quebrada nesta máquina
+# (falta fastapi/applications.py; `import fastapi` levanta ModuleNotFoundError)
+# e, para oito rotas e um WebSocket, o Starlette entrega o mesmo sem a camada
+# de validação que não seria usada.
+#
+# NÃO usamos scikit-rf. O único uso seria escrever Touchstone, que são 40
+# linhas à mão.
