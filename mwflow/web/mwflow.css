@@ -18,8 +18,10 @@ body {
 }
 
 /* ------------------------------------------------------------ cabeçalho */
+/* `flex-wrap`: numa janela estreita os selos descem para a segunda linha em
+   vez de ficarem por cima do nome da última aba. */
 #barra {
-  display: flex; align-items: center; gap: 16px;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
   padding: 8px 14px; background: var(--fundo);
   border-bottom: 1px solid var(--grade); flex: 0 0 auto;
 }
@@ -111,8 +113,14 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   padding: 10px 12px; font-size: 13px;
   font-variant-numeric: tabular-nums; line-height: 1.7;
 }
+/* Caixa de leitura ainda sem número nenhum não ocupa espaço: antes do primeiro
+   ajuste ela era uma faixa branca entre os controles e a tabela. */
+.leitura:empty { display: none; }
 .leitura .rot { color: var(--tinta2); margin-right: 4px; }
-.leitura .val { font-weight: 600; color: var(--seq4); margin-right: 16px; }
+/* Número e unidade são um valor só: sem isto, numa janela estreita a linha
+   quebra entre `0,8314` e `%vol`, e o número aparece sem a unidade. */
+.leitura .val { font-weight: 600; color: var(--seq4); margin-right: 16px;
+                white-space: nowrap; }
 .leitura .mau { color: var(--cat2); }
 .leitura-inline { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--seq4); }
 
@@ -128,18 +136,43 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   padding: 8px 10px;
 }
 .linha-controles.definicao label { flex-direction: row; }
+/* A nota da grandeza Y toma a largura que sobrar da linha. Com largura
+   automática ela empurrava o último campo para a linha seguinte. */
+.linha-controles.definicao #obs-curva-nota { flex: 1 1 100%; }
+.linha-controles.definicao #obs-curva-nota:empty { display: none; }
 
 .captura {
   display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;
   background: var(--fundo); border: 1px solid var(--grade);
   border-radius: 6px; padding: 10px; margin-bottom: 10px;
 }
-.captura label { display: flex; flex-direction: column; font-size: 11.5px; color: var(--tinta2); gap: 3px; }
-.captura input { width: 92px; }
+/* Cada campo é uma coluna, e o campo tem a largura do próprio rótulo. Com
+   largura fixa, o rótulo longo (`Referência cruzada`) transbordava para cima do
+   campo vizinho e o texto `obrigatório` saía cortado dentro da caixa. */
+.captura label {
+  display: flex; flex-direction: column; gap: 3px;
+  font-size: 11.5px; color: var(--tinta2); min-width: 92px; max-width: 130px;
+}
+.captura input { width: 100%; }
+/* A nota é texto livre: ela fica com o espaço que sobrar na linha. */
+.captura label.larga { flex: 1 1 160px; max-width: none; }
+.captura button { align-self: flex-end; }
 
 table { border-collapse: collapse; width: 100%; font-size: 12.5px;
         font-variant-numeric: tabular-nums; background: var(--fundo); margin-top: 10px; }
 th, td { border-bottom: 1px solid var(--grade); padding: 4px 7px; text-align: right; }
+
+/* A tabela de pontos tem dez colunas e mora em meia tela. Ela rola de lado
+   dentro da própria caixa em vez de empurrar a coluna inteira: assim o gráfico
+   ao lado guarda a largura dele, e nenhuma célula sai por baixo da borda. */
+.tabela-rolagem { overflow-x: auto; max-width: 100%; }
+.tabela-rolagem table { min-width: 560px; margin-top: 10px; }
+.tabela-rolagem th, .tabela-rolagem td { padding: 4px 6px; white-space: nowrap; }
+/* O cabeçalho da covariável é um nome que o operador digita: ele pode ser
+   longo, e uma coluna de número não deve crescer por causa do título. */
+.tabela-rolagem th { white-space: normal; }
+/* Botão de apagar dentro de uma linha: ele não disputa espaço com o dado. */
+.tabela-rolagem button.apagar { padding: 1px 6px; font-size: 11.5px; }
 th { color: var(--tinta2); font-weight: 600; font-size: 11.5px;
      text-transform: uppercase; letter-spacing: .4px; }
 td:first-child, th:first-child { text-align: center; }
@@ -166,28 +199,55 @@ tr.fora td { opacity: .4; text-decoration: line-through; }
   font-size: 13.5px;
 }
 .manual[open] > summary { border-bottom: 1px solid var(--grade); }
-#manual-corpo { padding: 4px 0 16px; max-width: 78ch; }
-#manual-corpo h3 {
+.manual-texto { padding: 4px 0 16px; max-width: 78ch; }
+.manual-texto h3 {
   font-size: 13px; text-transform: uppercase; letter-spacing: .8px;
   color: var(--seq4); margin: 20px 0 6px;
 }
-#manual-corpo h4 { font-size: 13px; margin: 14px 0 4px; color: var(--tinta); }
-#manual-corpo p { margin: 4px 0 8px; color: var(--tinta2); font-size: 13px; }
-#manual-corpo ol, #manual-corpo ul { margin: 4px 0 8px; padding-left: 22px; }
-#manual-corpo li { margin-bottom: 6px; font-size: 13px; }
-#manual-corpo code {
+.manual-texto h4 { font-size: 13px; margin: 14px 0 4px; color: var(--tinta); }
+.manual-texto p { margin: 4px 0 8px; color: var(--tinta2); font-size: 13px; }
+.manual-texto ol, .manual-texto ul { margin: 4px 0 8px; padding-left: 22px; }
+.manual-texto li { margin-bottom: 6px; font-size: 13px; }
+.manual-texto code {
   font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
   font-size: 12px; background: var(--fundo2); border: 1px solid var(--grade);
   border-radius: 4px; padding: 1px 4px; white-space: nowrap;
 }
-#manual-corpo dl { margin: 6px 0; }
-#manual-corpo dt {
+.manual-texto dl { margin: 6px 0; }
+.manual-texto dt {
   font-weight: 600; color: var(--seq4); margin-top: 10px; font-size: 13px;
 }
-#manual-corpo dd { margin: 2px 0 0; font-size: 13px; }
+.manual-texto dd { margin: 2px 0 0; font-size: 13px; }
 /* O campo que tem dica avisa que tem: a definição inteira sai no `title`.
    O botão fica de fora — nele o ponteiro tem de continuar dizendo "clique". */
 [data-termo]:not(button) { cursor: help; }
+
+/* Botão de instalação, no cabeçalho. Ele fica junto dos selos, à direita, e
+   não entra na fila das abas: instalação não é uma tela de medida. */
+#barra .ajuda {
+  flex: 0 0 auto; font-size: 12.5px; padding: 5px 11px;
+  border-color: var(--seq2); color: var(--seq4);
+}
+
+/* Diálogo da janela inteira. O `dialog` modal sobe para a camada de topo do
+   navegador, e por isso cobre até o cartão de escolha do aparelho. */
+.dialogo {
+  border: 1px solid var(--grade); border-radius: 10px; padding: 0 22px 18px;
+  max-width: 82ch; width: calc(100vw - 40px); max-height: 84vh; overflow: auto;
+  box-shadow: 0 8px 30px rgba(0,0,0,.18); color: var(--tinta);
+  background: var(--fundo);
+}
+.dialogo::backdrop { background: rgba(34, 38, 43, .55); }
+.dialogo-topo {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; position: sticky; top: 0; background: var(--fundo);
+  padding: 16px 0 10px; border-bottom: 1px solid var(--grade);
+}
+.dialogo-topo h2 { margin: 0; font-size: 17px; color: var(--seq4); }
+.dialogo .fecha {
+  border: none; background: none; font-size: 22px; line-height: 1;
+  color: var(--tinta2); padding: 0 4px;
+}
 
 .aviso {
   background: #f9ecf2; border-left: 3px solid var(--cat2);
@@ -210,6 +270,12 @@ tr.fora td { opacity: .4; text-decoration: line-through; }
 #cartao-aparelho h2 { margin: 0 0 8px; font-size: 17px; color: var(--seq4); }
 #cartao-aparelho p { margin: 6px 0 14px; font-size: 13px; }
 #cartao-aparelho button { width: 100%; padding: 9px; margin-bottom: 4px; }
+/* O elo para o manual de instalação não é uma escolha de aparelho: ele não
+   pode parecer um terceiro botão grande ao lado dos dois que ligam a medida. */
+#cartao-aparelho button.elo {
+  width: auto; padding: 0; margin: 0; border: none; background: none;
+  color: var(--seq3); text-decoration: underline; font-size: 13px;
+}
 /* O `.oculto` sozinho NÃO apaga este cartão: um seletor de id pesa mais que um
    de classe, e o `display: flex` de cima venceria. Sem esta linha o cartão
    continua cobrindo a tela inteira depois de o usuário escolher o aparelho, e

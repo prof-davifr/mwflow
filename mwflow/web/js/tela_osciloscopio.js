@@ -99,7 +99,7 @@ MW.osciloscopio = (function () {
     const [dx, dy] = MW.decima(xs, k === 1 ? ys : ys.map(v => v / k), largura);
     plot.axes[1].label = rotulo();
     plot.axes[1].values = function (u, vs) {
-      return vs.map(v => MW.num(v, k === 1 ? 3 : 4));
+      return vs.map(v => MW.numEixo(v, k === 1 ? 3 : 4));
     };
     plot.setData([dx, dy]);
     estatisticas(xs, ys);

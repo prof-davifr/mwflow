@@ -1,11 +1,29 @@
 # MWFlow
 
-Software de bancada, no navegador, para o LiteVNA64. Ele parametriza o aparelho,
-calibra, mede sem parar e liga a grandeza medida a uma grandeza conhecida — a
-concentração de um analito, a salinidade, a pressão, o que o experimento pedir.
+Software de bancada, no navegador, para o analisador vetorial LiteVNA64. Ele
+parametriza o aparelho, calibra em SOLT, mede sem parar e liga a grandeza
+medida a uma grandeza conhecida — a concentração de um analito, a salinidade,
+a pressão, o que o experimento pedir. O que sai no fim da sessão não é um
+gráfico: é uma curva de calibração com R², sensibilidade, limite de detecção e
+previsão inversa com barra de incerteza.
 
 Cinco telas: varredura, osciloscópio, espectrograma, curva de calibração do
 sensor e calibração SOLT.
+
+As escolhas dele vêm de uma bancada em que a série gravimétrica leva horas:
+
+- **`f_res` e `Q` saem de um ajuste complexo de 1 polo sobre uma banda**, nunca
+  de `argmax`. O modelo ajustado é desenhado por cima dos dados: um ajuste ruim
+  aparece na hora da medida, não na análise do dia seguinte.
+- **No disco vai sempre o dado bruto.** A correção é aplicada na leitura, e por
+  isso trocar de conjunto de calibração depois da medida nunca destrói medida.
+- **A calibração vem em colchete.** Os padrões são remedidos ao encerrar, e com
+  dois conjuntos os termos de erro são interpolados pelo carimbo de hora de
+  cada varredura. Numa série longa é isso que separa a deriva do instrumento da
+  deriva do sensor.
+- **A incerteza é medida, não suposta.** O σ de 60 s do osciloscópio é o número
+  que entra no limite de detecção.
+- **Nada sai da máquina**: sem CDN, sem telemetria, sem chamada externa.
 
 **Existem duas versões, e elas medem igual.** A de Python roda um servidor
 local; a de navegador não roda servidor nenhum e fala com o aparelho pela porta
@@ -15,9 +33,10 @@ paridade cobra 55 casos de concordância entre elas.
 ## Começar
 
 O passo a passo completo para uma máquina nova, no Linux e no Windows, está
-**dentro do programa**: tela *Curva de calibração*, botão **Manual**. Ele vale
-também na página publicada — <https://prof-davifr.github.io/mwflow/> —, antes
-de instalar qualquer coisa. O resumo:
+**dentro do programa**: botão **Instalação**, no alto da janela, em qualquer
+tela. Na página publicada — <https://prof-davifr.github.io/mwflow/> — ele
+também abre pelo cartão de escolha do aparelho, antes de instalar qualquer
+coisa. O resumo:
 
 Sem instalar nada, no Chrome, no Edge ou no Opera de desktop:
 
@@ -111,7 +130,7 @@ escrita ao lado do caso:
 | **Varredura** | S11 e S21 ao vivo, em dB, fase, VSWR, R+jX ou atraso de grupo. O **modelo ajustado** aparece por cima dos dados e a banda do ajuste fica sombreada: quando o ajuste está ruim, você vê na hora. |
 | **Osciloscópio** | A grandeza escolhida contra o tempo. Mostra média, desvio, pico a pico, deriva por minuto e **σ de 60 s** — o número que substitui a precisão suposta no cálculo do limite de detecção. |
 | **Espectrograma** | Magnitude contra frequência e tempo, em canvas próprio com buffer em anel. |
-| **Curva de calibração** | Y medido contra X digitado, com **qualquer grandeza**: você digita o nome e a unidade do X e da covariável. Ajuste linear, polinomial ou linear com a covariável; R², sensibilidade, LOD, previsão inversa e varredura de R². Traz o manual da tela — instalação, preparo do experimento e glossário — e a mesma definição vira dica de cada campo. |
+| **Curva de calibração** | Y medido contra X digitado, com **qualquer grandeza**: você digita o nome e a unidade do X e da covariável. Ajuste linear, polinomial ou linear com a covariável; R², sensibilidade, LOD, previsão inversa e varredura de R². Traz o manual da tela — preparo do experimento e glossário — e a mesma definição vira dica de cada campo. |
 | **Calibração SOLT** | Aberto, curto, carga, thru e isolamento; resolve, aplica e faz o colchete de início e fim de sessão. |
 
 ### Duas escolhas da interface que valem explicação

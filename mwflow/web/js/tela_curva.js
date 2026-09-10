@@ -139,7 +139,15 @@ MW.curva = (function () {
     MW.q("#curva-cov").value = c.covariavel || "";
     MW.q("#curva-cov-unidade").value = c.unidade_cov || "";
     MW.q("#curva-cov-exigida").checked = !!c.cov_exigida;
-    if (c.observavel) MW.q("#obs-curva").value = c.observavel;
+    if (c.observavel) {
+      const el = MW.q("#obs-curva");
+      el.value = c.observavel;
+      /* O catálogo de grandezas chega por outra rota, e pode chegar DEPOIS da
+         curva. Num menu ainda vazio a atribuição não pega, e a tela abriria na
+         grandeza padrão em vez da grandeza da curva. O valor fica guardado no
+         elemento, e `preencheObservaveis` o resgata quando monta as opções. */
+      el.dataset.querido = c.observavel;
+    }
   }
 
   /* Todo rótulo da tela sai da definição. Um lugar só faz isso, senão um
@@ -151,24 +159,63 @@ MW.curva = (function () {
     MW.q("#cap-cov").placeholder = d.cov_exigida ? "obrigatório" : "opcional";
     MW.q("#col-cov").textContent = d.covariavel + com(d.unidade_cov);
     pCurva.axes[0].label = d.grandeza_x + com(d.unidade_x);
+    pCurva.axes[1].label = rotuloY();
     pResid.axes[0].label = (MW.q("#resid-eixo").value === "cov")
       ? d.covariavel + com(d.unidade_cov) : "ordem de execução";
+    pResid.axes[1].label = "resíduo" + com(escala().u);
+    notaY();
     /* O uPlot só desenha o rótulo do eixo quando refaz os eixos. */
     pCurva.redraw(false, true);
     pResid.redraw(false, true);
   }
+
+  /* A grandeza Y em vigor. Ela sai do CAMPO, como o resto da definição, para o
+     rótulo acompanhar o menu na hora; `salvaDefinicao()` é quem grava a
+     escolha na curva aberta, e `mostraDefinicao()` é quem devolve o campo
+     quando o operador troca de curva. */
+  function obsY() { return MW.q("#obs-curva").value || ""; }
 
   /* Unidade do eixo Y. Ela é conhecida assim que o observável é escolhido —
      não depende de já haver ajuste, senão os primeiros pontos apareceriam em
      hertz cru e ninguém leria 1.538.890.107,65. */
   function unidadeY() {
     if (ajuste && ajuste.unidade_y) return ajuste.unidade_y;
-    const v = (dados.curva && dados.curva.observavel)
-      || MW.q("#obs-curva").value || "";
-    const [tipo, nome] = v.split(":");
+    const [tipo, nome] = obsY().split(":");
     if (tipo === "derivado") return (MW.estado.unidade_escalar || {})[nome] || "";
     const o = (MW.estado.observaveis || []).find(x => x.id === nome);
     return o ? o.unidade : "";
+  }
+
+  /* Nome da grandeza Y, SEM a unidade. O rótulo de um traço já vem com ela
+     ("|S| (dB)"), e o eixo precisa juntar a unidade da escala em uso — MHz, e
+     não Hz. Duas unidades no mesmo rótulo seriam piores do que nenhuma. */
+  function nomeY() {
+    const [tipo, nome] = obsY().split(":");
+    if (!nome) return "Y medido";
+    if (tipo === "derivado") {
+      return (MW.estado.rotulo_escalar || {})[nome] || nome;
+    }
+    const o = (MW.estado.observaveis || []).find(x => x.id === nome);
+    return o ? o.rotulo.replace(/\s*\([^()]*\)\s*$/, "") : nome;
+  }
+
+  /** Rótulo do eixo Y: o nome da grandeza e a unidade da escala em uso. */
+  function rotuloY() { return nomeY() + com(escala().u); }
+
+  /* Uma grandeza de TRAÇO vale ponto a ponto na grade de frequências: para
+     virar um número ela precisa de UMA frequência, e essa frequência é a
+     `Frequência fixa` do painel. Sem dizer isso aqui, o operador mede |S| em
+     1500 MHz achando que mediu a banda inteira. */
+  function notaY() {
+    const el = MW.q("#obs-curva-nota");
+    if (!el) return;
+    if (obsY().split(":")[0] !== "traco") { el.textContent = ""; return; }
+    const f = (MW.estado.config || {}).f_cw_hz;
+    /* Em MHz, e não em unidade de engenharia: é assim que o número aparece no
+       campo `Frequência (MHz)` do painel, e os dois têm de se reconhecer. */
+    el.textContent = f
+      ? "amostrado em " + MW.num(f / 1e6, 3) + " MHz, a Frequência fixa do painel"
+      : "amostrado na Frequência fixa do painel";
   }
 
   function escala() {
@@ -196,7 +243,7 @@ MW.curva = (function () {
       const m = new Map(); gx.forEach((v, i) => m.set(v, gy[i]));
       return todos.map(v => (m.has(v) ? m.get(v) : null));
     };
-    pCurva.axes[1].label = "Y medido" + (e.u ? " (" + e.u + ")" : "");
+    pCurva.axes[1].label = rotuloY();
     pCurva.setData([todos, mapa(xs, ys),
                     linha ? mapa(xs2, linha) : MW.vazio(todos.length),
                     MW.vazio(todos.length)]);
@@ -279,6 +326,11 @@ MW.curva = (function () {
       covariavel: MW.q("#curva-cov").value.trim(),
       unidade_cov: MW.q("#curva-cov-unidade").value.trim(),
       cov_exigida: MW.q("#curva-cov-exigida").checked,
+      /* A grandeza Y é da CURVA. Ela entra aqui porque a captura mede o que o
+         MENU diz, e a tela recarregada mostra o que a CURVA diz: enquanto as
+         duas não fossem a mesma coisa, cada ponto medido devolvia o menu para
+         a grandeza da criação. */
+      observavel: MW.q("#obs-curva").value,
     };
   }
 
@@ -366,19 +418,22 @@ MW.curva = (function () {
     h += "<div>" + rot("r2-ajustado", "R² ajustado")
       + '<span class="val">' + MW.num(a.r2_aj, 4) + "</span>"
       + rot("s-yx", "erro padrão do ajuste")
-      + '<span class="val">' + MW.num(a.s_yx, 5) + "</span>"
+      /* O erro padrão vem na unidade CRUA do ajuste; a tela toda mostra Y na
+         escala de leitura. Sem dividir, o número aqui é mil vezes o da tabela. */
+      + '<span class="val">' + MW.sig(a.s_yx / escala().k, 4) + " " + escala().u
+      + "</span>"
       + rot("loq", "LOQ")
-      + '<span class="val">' + MW.num(a.loq, 3) + " " + ux + "</span></div>";
+      + '<span class="val">' + MW.sig(a.loq, 4) + " " + ux + "</span></div>";
     if (a.tipo === "covariavel") {
       /* Quanto de X uma unidade da covariável imita. É este número, e não o
          coeficiente cru, que diz se a covariável precisa ser controlada. */
       const porUnidade = a.coef_cov / a.sensibilidade;
       const uc = d.unidade_cov;
       h += "<div>" + rot("coef-cov", "coeficiente de " + d.covariavel)
-        + '<span class="val">' + MW.num(a.coef_cov, 4)
+        + '<span class="val">' + MW.sig(a.coef_cov, 4)
         + (uc ? " por " + uc : " por unidade") + "</span>"
         + rot("coef-cov", (uc ? "um " + uc : "uma unidade") + " imita")
-        + '<span class="val">' + MW.num(Math.abs(porUnidade), 4) + " " + ux
+        + '<span class="val">' + MW.sig(Math.abs(porUnidade), 4) + " " + ux
         + "</span>"
         + rot("cov-ref", d.covariavel + " de referência")
         + '<span class="val">' + MW.num(a.cov_ref, 2) + " " + uc + "</span></div>";
@@ -449,6 +504,10 @@ MW.curva = (function () {
       carrega();
     });
 
+    /* A frequência de amostragem de um traço é a do painel, e o painel muda
+       sem passar por esta tela. */
+    MW.ws.em("estado", notaY);
+
     MW.ws.em("captura", function (m) {
       if (m.estado === "andando") {
         MW.q("#cap-estado").textContent = "medindo… faltam " + m.faltam;
@@ -506,8 +565,20 @@ MW.curva = (function () {
       MW.q(sel).addEventListener("change", salvaDefinicao);
     });
     MW.q("#curva-cov-exigida").addEventListener("change", salvaDefinicao);
+    /* Trocar a grandeza Y grava a escolha na curva aberta. Trocá-la no meio de
+       uma série põe duas unidades na mesma coluna Y, e o ajuste soma metros com
+       segundos — por isso a troca pede confirmação assim que existe ponto. */
     MW.q("#obs-curva").addEventListener("change", function () {
-      rotulos(); desenha();
+      const anterior = (dados.curva && dados.curva.observavel) || null;
+      const n = dados.pontos.length;
+      if (curvaId && n && anterior && anterior !== this.value
+          && !confirm("Esta curva já tem " + n + " ponto(s) medido(s) na "
+              + "grandeza anterior.\n\nTrocar a grandeza Y mistura duas "
+              + "unidades na mesma coluna Y. Trocar assim mesmo?")) {
+        this.value = anterior;
+        return;
+      }
+      salvaDefinicao().then(function () { rotulos(); desenha(); });
     });
     MW.q("#resid-eixo").addEventListener("change", function () {
       rotulos(); desenhaResiduos();
@@ -538,6 +609,11 @@ MW.curva = (function () {
       MW.mensagem("varrendo R² frequência a frequência…");
       MW.api("/api/curva/" + curvaId + "/r2").then(r => r.json()).then(function (d) {
         if (d.erro) { MW.mensagem(d.erro); return; }
+        /* O gráfico estava escondido: ele só existe depois desta conta. Mostrar
+           antes de medir e só então dimensionar — dentro de um `oculto` o
+           elemento não tem tamanho nenhum. */
+        MW.q("#g-r2").classList.remove("oculto");
+        MW.ajusta(pR2, MW.q("#g-r2"));
         pR2.setData([d.freqs.map(v => v / 1e6), d.r2]);
         MW.mensagem("melhor R² = " + MW.num(d.melhor_r2, 4) + " em "
           + MW.eng(d.melhor_hz) + " (inclinação "

@@ -108,6 +108,14 @@ O que morde deste lado:
 - **A dica de um campo e o verbete do manual são o MESMO texto**, em
   `js/manual.js`. Campo novo ganha `data-termo`; termo novo entra em `TERMOS`.
   `MW.manual.orfaos()` lista os `data-termo` sem verbete.
+- **A instalação é da janela, não de uma tela.** Ela mora no diálogo
+  `#dlg-instalacao`, que o botão Instalação do cabeçalho e o cartão de escolha
+  do aparelho abrem por `MW.manual.abreInstalacao()`. Quem precisa dela ainda
+  não escolheu tela nenhuma — e, na página publicada, ainda não ligou o
+  aparelho.
+- **O `MW.ajusta` desconta a legenda do uPlot da altura do gráfico.** A legenda
+  fica fora do que o `setSize` dimensiona: sem descontá-la, o gráfico passa da
+  caixa e cai por cima do que vier depois.
 - **Coluna do CSV da curva: `cov`**, com nome fixo de propósito. Um cabeçalho
   que mudasse com a curva quebraria os scripts de análise.
 - **Coluna nova no SQLite tem de entrar em `COLUNAS_NOVAS`**

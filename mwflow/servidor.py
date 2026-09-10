@@ -491,24 +491,32 @@ def cria_app(motor):
         return JSONResponse(_limpa_json(est.nova_curva(await request.json())))
 
     async def api_curva_definicao(request):
-        """Renomeia o X e a covariável de uma curva já aberta.
+        """Edita a definição de uma curva já aberta: o X, a covariável e a
+        grandeza Y.
 
-        Só rótulo muda aqui: nenhum número medido depende do nome da grandeza.
-        Sem esta rota, editar os campos de definição não teria efeito nenhum
-        sobre a curva na tela, e o operador ficaria olhando um campo que não
-        obedece.
+        O nome do X e o da covariável são só rótulo: nenhum número medido
+        depende deles. A grandeza Y não é rótulo — ela diz o que a captura vai
+        medir e em que unidade o ajuste sai. Ela entra aqui porque a captura
+        obedece ao menu da tela, e a tela recarregada obedece à curva: enquanto
+        as duas não fossem a mesma coisa, cada ponto medido devolvia o menu
+        para a grandeza da criação da curva.
+
+        `observavel` vazio deixa a grandeza como está, e é assim que uma edição
+        de rótulo não mexe no que a curva mede.
         """
         cid = int(request.path_params["cid"])
         d = await request.json()
         gx = (d.get("grandeza_x") or "").strip()
+        obs = (d.get("observavel") or "").strip()
         con = az.conecta()
         con.execute(
             "UPDATE curvas SET grandeza_x=?, analito=?, unidade_x=?, "
-            "covariavel=?, unidade_cov=?, cov_exigida=? WHERE id=?",
+            "covariavel=?, unidade_cov=?, cov_exigida=?, "
+            "observavel=COALESCE(?, observavel) WHERE id=?",
             (gx, gx, (d.get("unidade_x") or "").strip(),
              (d.get("covariavel") or "").strip(),
              (d.get("unidade_cov") or "").strip(),
-             0 if d.get("cov_exigida") is False else 1, cid))
+             0 if d.get("cov_exigida") is False else 1, obs or None, cid))
         con.commit()
         con.close()
         return JSONResponse(dict(ok=True))

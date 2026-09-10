@@ -22,6 +22,33 @@ MW.num = function (v, casas) {
   });
 };
 
+/* Rótulo de EIXO nunca leva separador de milhar. Em português o separador é o
+   ponto, e num eixo em MHz o rótulo "1.504" se lê como 1,504 — o engano mais
+   caro possível numa escala. O separador ajuda a ler um número solto; numa
+   escala de dez rótulos ele só atrapalha. */
+MW.numEixo = function (v, casas) {
+  if (v === null || v === undefined || !isFinite(v)) return "—";
+  return v.toLocaleString("pt-BR", {
+    minimumFractionDigits: casas, maximumFractionDigits: casas,
+    useGrouping: false,
+  });
+};
+
+/* Número com as casas que a GRANDEZA dele pede, e não um número fixo delas.
+   Um erro padrão de 1.368.966 não precisa de cinco casas; um de 0,0041
+   precisa. Fora da faixa que se lê de relance, o número sai em potência de
+   dez. */
+MW.sig = function (v, algarismos) {
+  if (v === null || v === undefined || !isFinite(v)) return "—";
+  const n = algarismos || 4;
+  if (v === 0) return MW.num(0, n - 1);
+  const ordem = Math.floor(Math.log10(Math.abs(v)));
+  if (ordem >= 6 || ordem <= -5) {
+    return v.toExponential(n - 1).replace(".", ",");
+  }
+  return MW.num(v, Math.max(0, n - 1 - ordem));
+};
+
 MW.eng = function (hz) {
   if (!isFinite(hz)) return "—";
   const a = Math.abs(hz);
@@ -101,7 +128,7 @@ MW.eixo = function (rotulo, casas) {
     values: function (u, vs) {
       const c = casas === "auto" ? casasDe(vs)
         : (casas === undefined ? 1 : casas);
-      return vs.map(function (v) { return MW.num(v, c); });
+      return vs.map(function (v) { return MW.numEixo(v, c); });
     },
   };
 };
@@ -134,12 +161,19 @@ MW.serie = function (rotulo, cor, largura) {
   };
 };
 
-/* Redimensiona um gráfico uPlot para o elemento que o contém. */
+/* Redimensiona um gráfico uPlot para o elemento que o contém.
+   A LEGENDA NÃO ENTRA NA ALTURA QUE O `setSize` PEDE: ela é uma tabela abaixo
+   da área de desenho. Sem descontá-la, o gráfico passa da caixa pela altura da
+   legenda e cai por cima do que vier depois — do rótulo do resíduo, do
+   cabeçalho da tabela de pontos. */
 MW.ajusta = function (plot, el) {
   if (!plot || !el) return;
   const r = el.getBoundingClientRect();
-  if (r.width > 20 && r.height > 20) {
-    plot.setSize({ width: Math.floor(r.width - 16), height: Math.floor(r.height - 16) });
+  const leg = plot.root ? plot.root.querySelector(".u-legend") : null;
+  const alturaLegenda = leg ? leg.getBoundingClientRect().height : 0;
+  const altura = Math.floor(r.height - 16 - alturaLegenda);
+  if (r.width > 20 && altura > 20) {
+    plot.setSize({ width: Math.floor(r.width - 16), height: altura });
   }
 };
 

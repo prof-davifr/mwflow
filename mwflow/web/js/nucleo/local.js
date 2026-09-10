@@ -394,17 +394,22 @@ async function roteia(caminho, opcoes) {
   if (m) return pontosDaCurva(Number(m[1]));
   m = p.match(/^\/api\/curva\/(\d+)\/definicao$/);
   if (m) {
-    /* Renomeia o X e a covariável de uma curva já aberta. Só rótulo muda:
-       nenhum número medido depende do nome da grandeza. */
+    /* Edita a definição de uma curva já aberta — gêmeo do `api_curva_definicao`
+       do servidor. O nome do X e o da covariável são só rótulo. A grandeza Y
+       não é: ela diz o que a captura mede, e sem gravá-la aqui cada ponto
+       medido devolvia o menu da tela para a grandeza da criação. Grandeza Y
+       vazia deixa a que já estava. */
     const c = await az.pega("curvas", Number(m[1]));
     if (!c) return { erro: "curva não encontrada" };
     const gx = (corpo.grandeza_x || "").trim();
+    const obs = (corpo.observavel || "").trim();
     c.grandeza_x = gx;
     c.analito = gx;
     c.unidade_x = (corpo.unidade_x || "").trim();
     c.covariavel = (corpo.covariavel || "").trim();
     c.unidade_cov = (corpo.unidade_cov || "").trim();
     c.cov_exigida = corpo.cov_exigida === false ? 0 : 1;
+    if (obs) c.observavel = obs;
     await az.poe("curvas", c);
     return { ok: true };
   }
@@ -539,6 +544,10 @@ function cartao() {
     + '<p class="nota">A bancada simulada devolve os mesmos bytes que o '
     + "aparelho devolveria, com ruído e caixa de erro. Todo dado que sair "
     + "dela leva o rótulo <strong>simulado</strong> até o arquivo.</p>"
+    // Quem chega aqui pode não ter nada instalado ainda. O manual de
+    // instalação é o mesmo do botão do cabeçalho, e abre por cima do cartão.
+    + '<p class="nota"><button id="cartao-instalacao" class="elo">Como '
+    + "instalar numa máquina nova</button></p>"
     + "</div>";
   document.body.appendChild(div);
 
@@ -582,6 +591,10 @@ function cartao() {
 
   div.querySelector("#liga-sim").addEventListener("click", function () {
     comeca(new LiteVNA(new PortaSimulada({ dut: "ressoador" })));
+  });
+
+  div.querySelector("#cartao-instalacao").addEventListener("click", function () {
+    MW.manual.abreInstalacao();
   });
 }
 

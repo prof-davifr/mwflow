@@ -29,14 +29,21 @@ MW.espectrograma = (function () {
     return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
   }
   const RAMPAS = {
-    /* A rampa da casa, esticada nas duas pontas para cobrir a faixa toda
-       mantendo a luminância monótona. */
-    casa: [[255,255,255],[126,200,216],[59,163,189],[15,125,153],[8,83,107],[4,34,44]],
+    /* Jet, a rampa do MATLAB. Ela é linear por partes com quebras a cada 1/8
+       da faixa, e é por isso que estes NOVE pontos igualmente espaçados a
+       reproduzem exata sob interpolação linear.
+
+       Jet não tem luminância monótona: uma faixa amarela parece mais clara do
+       que os dois lados dela, e isso inventa uma borda onde o dado não tem
+       nenhuma. Ela está aqui porque é a rampa que o pessoal do laboratório
+       lê sem pensar, e porque `viridis` está ao lado para conferir. */
+    jet: [[0,0,127],[0,0,255],[0,127,255],[0,255,255],[127,255,127],
+          [255,255,0],[255,127,0],[255,0,0],[127,0,0]],
     viridis: [[68,1,84],[59,82,139],[33,145,140],[94,201,98],[253,231,37]],
     cinza: [[255,255,255],[0,0,0]],
   };
   function fazLut(nome) {
-    const p = RAMPAS[nome] || RAMPAS.casa;
+    const p = RAMPAS[nome] || RAMPAS.jet;
     const u = new Uint8ClampedArray(256 * 4);
     for (let i = 0; i < 256; i++) {
       const x = i / 255 * (p.length - 1);
@@ -172,7 +179,7 @@ MW.espectrograma = (function () {
   function inicia() {
     vis = MW.q("#esp-canvas"); visCtx = vis.getContext("2d");
     eixos = MW.q("#esp-eixos"); eixosCtx = eixos.getContext("2d");
-    lut = fazLut("casa");
+    lut = fazLut(MW.q("#mapa-esp").value);
     ajustaTamanho();
 
     MW.ws.em("linha_espectro", function (m) {

@@ -1,5 +1,12 @@
 "use strict";
-/* Manual da tela de curva de calibração.
+/* Manual: instalação da máquina, preparação do experimento e glossário.
+ *
+ * DOIS NÍVEIS, DE PROPÓSITO. A instalação não é de tela nenhuma: quem precisa
+ * dela ainda não mediu nada e não escolheu tela. Ela mora num diálogo da
+ * janela inteira (`#dlg-instalacao`), que abre pelo botão do cabeçalho e pelo
+ * cartão de escolha do aparelho — o primeiro lugar onde alguém sem o programa
+ * instalado chega. O preparo do experimento e o glossário continuam na tela de
+ * curva de calibração, porque falam dos campos dela.
  *
  * UMA DEFINIÇÃO, DOIS LUGARES. Cada termo aparece duas vezes na tela: como
  * dica (`title`) do campo que o usa e como verbete do glossário. O texto mora
@@ -188,8 +195,10 @@ MW.manual = (function () {
       + "`cov` traz a covariável desta curva, seja ela qual for — o nome da "
       + "coluna é fixo para não quebrar os scripts de análise."],
     "manual": ["Manual",
-      "Este texto. Cada campo da tela também mostra a mesma definição quando o "
-      + "ponteiro para em cima dele."],
+      "Este texto: o preparo do experimento e o glossário desta tela. Cada "
+      + "campo mostra a mesma definição quando o ponteiro para em cima dele. A "
+      + "instalação numa máquina nova está no botão Instalação, no alto da "
+      + "janela."],
   };
 
   /* ------------------------------------------ instalação em máquina nova */
@@ -301,18 +310,31 @@ MW.manual = (function () {
       + "</" + tag + ">";
   }
 
-  /** Escreve o manual inteiro dentro do elemento dado. */
-  function monta(el) {
+  /** Escreve a instalação dentro do elemento dado. */
+  function montaInstalacao(el) {
     if (!el) return;
-    let h = "";
-
-    h += "<h3>Instalar numa máquina nova</h3>";
-    h += "<p>Há dois caminhos, e os dois funcionam no Linux e no Windows. O "
+    let h = "<p>Há dois caminhos, e os dois funcionam no Linux e no Windows. O "
       + "primeiro não instala nada; o segundo grava em arquivo e é o da "
       + "bancada.</p>";
     INSTALACAO.forEach(function (bloco) {
       h += "<h4>" + bloco[0] + "</h4>" + lista(bloco[1], true);
     });
+    el.innerHTML = h;
+  }
+
+  /** Abre o diálogo de instalação, de onde quer que o usuário esteja. */
+  function abreInstalacao() {
+    const dlg = document.getElementById("dlg-instalacao");
+    if (!dlg || dlg.open) return;
+    const corpo = dlg.querySelector("#instalacao-corpo");
+    if (corpo && !corpo.innerHTML) montaInstalacao(corpo);
+    dlg.showModal();
+  }
+
+  /** Escreve o manual da tela de curva dentro do elemento dado. */
+  function monta(el) {
+    if (!el) return;
+    let h = "";
 
     h += "<h3>Preparar o experimento</h3>";
     h += "<p>Na ordem. Pular um passo não impede de medir; impede de saber o "
@@ -347,6 +369,7 @@ MW.manual = (function () {
       (el) => el.getAttribute("data-termo")).filter((k) => !TERMOS[k]);
   }
 
-  return { termos: TERMOS, monta: monta, aplicaDicas: aplicaDicas,
+  return { termos: TERMOS, monta: monta, montaInstalacao: montaInstalacao,
+           abreInstalacao: abreInstalacao, aplicaDicas: aplicaDicas,
            orfaos: orfaos };
 })();

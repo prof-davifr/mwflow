@@ -23,6 +23,9 @@
     <span id="selo-cal" class="selo">sem cal</span>
     <span id="selo-taxa" class="selo">—</span>
   </div>
+  <!-- A instalação não pertence a nenhuma tela: ela vem antes de todas. -->
+  <button id="abrir-instalacao" class="ajuda"
+          title="Como instalar o MWFlow numa máquina nova, no Linux e no Windows">Instalação</button>
 </header>
 
 <div id="corpo">
@@ -141,7 +144,7 @@
       <label>dB mín <input id="esp-min" type="number" value="-90" step="1"></label>
       <label>dB máx <input id="esp-max" type="number" value="0" step="1"></label>
       <label>Cores
-        <select id="mapa-esp"><option value="casa" selected>da casa</option><option value="viridis">viridis</option><option value="cinza">cinza</option></select>
+        <select id="mapa-esp"><option value="jet" selected>jet</option><option value="viridis">viridis</option><option value="cinza">cinza</option></select>
       </label>
       <button id="limpa-esp">Limpar</button>
     </div>
@@ -175,6 +178,11 @@
         <input id="curva-cov-unidade" type="text" value="°C" size="5"></label>
       <label data-termo="cov-exigida">
         <input type="checkbox" id="curva-cov-exigida" checked> exigir a covariável</label>
+      <!-- Uma grandeza de traço vale ponto a ponto na grade de frequências:
+           para virar um número ela precisa de UMA frequência, e essa é a
+           `Frequência fixa` do painel. Sem dizer isso, o operador mede |S| em
+           1500 MHz achando que mediu a banda inteira. -->
+      <span id="obs-curva-nota" class="nota"></span>
     </div>
 
     <div class="captura">
@@ -186,7 +194,7 @@
       <label data-termo="ordem">Ordem <input id="cap-ordem" type="number" step="1" size="3"></label>
       <label data-termo="x-ref">Referência cruzada <input id="cap-ref" type="number" step="any" size="6"></label>
       <label data-termo="n-med">Medidas <input id="cap-n" type="number" value="5" min="1" max="64" size="3"></label>
-      <label data-termo="nota">Nota <input id="cap-nota" type="text" size="14"></label>
+      <label data-termo="nota" class="larga">Nota <input id="cap-nota" type="text" size="14"></label>
       <button id="cap-botao" class="primario" data-termo="ponto">Capturar ponto</button>
       <span id="cap-estado" class="nota"></span>
     </div>
@@ -226,14 +234,22 @@
           <button id="curva-r2" data-termo="varredura-r2">Varredura de R²</button>
         </div>
         <div id="curva-numeros" class="leitura"></div>
-        <div id="g-r2" class="grafico baixo"></div>
-        <table id="tabela-pontos"><thead><tr>
-          <th data-termo="excluir">usar</th><th data-termo="x">X</th>
-          <th data-termo="grandeza-y">Y</th><th data-termo="sigma">σ</th>
-          <th data-termo="n-med">n</th><th data-termo="cov" id="col-cov">cov.</th>
-          <th data-termo="replica">rép.</th><th data-termo="ordem">ordem</th>
-          <th>hora</th><th></th>
-        </tr></thead><tbody></tbody></table>
+        <!-- O gráfico de R² contra frequência só aparece depois da varredura
+             de R². Vazio, ele era um quadro de 250 px entre os números e a
+             tabela, e empurrava a tabela para fora da tela. -->
+        <div id="g-r2" class="grafico baixo oculto"></div>
+        <!-- A tabela tem dez colunas e mora em meia tela. Sem uma caixa que
+             role de lado, a coluna da hora e o botão de apagar saíam por baixo
+             da borda direita e ficavam fora do alcance do mouse. -->
+        <div class="tabela-rolagem">
+          <table id="tabela-pontos"><thead><tr>
+            <th data-termo="excluir">usar</th><th data-termo="x">X</th>
+            <th data-termo="grandeza-y">Y</th><th data-termo="sigma">σ</th>
+            <th data-termo="n-med">n</th><th data-termo="cov" id="col-cov">cov.</th>
+            <th data-termo="replica">rép.</th><th data-termo="ordem">ordem</th>
+            <th>hora</th><th></th>
+          </tr></thead><tbody></tbody></table>
+        </div>
         <div class="linha-controles">
           <button id="curva-csv" data-termo="csv">Exportar CSV</button>
           <button id="curva-figura">Exportar figura</button>
@@ -244,10 +260,11 @@
     </div>
 
     <!-- O manual da tela. O texto mora no `js/manual.js`, e é o MESMO que
-         alimenta as dicas de cada campo: uma definição só, num lugar só. -->
+         alimenta as dicas de cada campo: uma definição só, num lugar só. A
+         instalação saiu daqui: ela está no botão Instalação do cabeçalho. -->
     <details id="manual-curva" class="manual">
-      <summary>Manual — instalação, preparação do experimento e glossário</summary>
-      <div id="manual-corpo"></div>
+      <summary>Manual — preparação do experimento e glossário</summary>
+      <div id="manual-corpo" class="manual-texto"></div>
     </details>
   </section>
 
@@ -304,6 +321,17 @@
   <span id="mensagem"></span>
   <span id="quedas"></span>
 </div>
+
+<!-- Manual de instalação, da janela inteira. Ele abre pelo botão do cabeçalho
+     e pelo cartão de escolha do aparelho, que é onde chega quem ainda não tem
+     nada instalado. O texto está no `js/manual.js`. -->
+<dialog id="dlg-instalacao" class="dialogo">
+  <form method="dialog" class="dialogo-topo">
+    <h2>Instalar numa máquina nova</h2>
+    <button class="fecha" aria-label="Fechar">×</button>
+  </form>
+  <div id="instalacao-corpo" class="manual-texto"></div>
+</dialog>
 
 <!--MODO-->
 <script src="vendor/uPlot.iife.min.js"></script>

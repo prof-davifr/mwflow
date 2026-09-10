@@ -192,7 +192,7 @@ MW.varredura = (function () {
     MW.q("#formato-varredura").addEventListener("change", function () {
       const fmt = FORMATO[this.value];
       plot.axes[1].values = function (u, vs) {
-        return vs.map(v => MW.num(v, fmt.casas));
+        return vs.map(v => MW.numEixo(v, fmt.casas));
       };
       retido = null;
       desenha();

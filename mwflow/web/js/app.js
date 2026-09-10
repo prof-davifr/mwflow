@@ -162,6 +162,14 @@ function mostraEstado(m) {
   }
 }
 
+/* A grandeza que cada menu abre. Ela é a que aquela tela mede quase sempre.
+   No osciloscópio é `f_res`: ele existe para ver a ressonância andar no tempo.
+   Na curva é |S| em dB — é a leitura que responde ponto a ponto ao valor de X,
+   é ela que a varredura de R² procura, e ela cabe num eixo: `f_res` põe o eixo
+   Y em 1504 MHz para mostrar uma variação de 2 MHz. */
+const PADRAO_OBSERVAVEL = { "#obs-osc": "derivado:f_res",
+                            "#obs-curva": "traco:mag_db" };
+
 function preencheObservaveis(dados) {
   MW.estado.observaveis = dados.observaveis;
   MW.estado.unidade_escalar = dados.unidade_escalar;
@@ -182,21 +190,25 @@ function preencheObservaveis(dados) {
       });
     }
   });
-  ["#obs-osc", "#obs-curva"].forEach(function (sel) {
+  Object.keys(PADRAO_OBSERVAVEL).forEach(function (sel) {
     const el = MW.q(sel);
     if (!el) return;
     /* O catálogo chega depois de a curva ser carregada. Sem guardar a escolha,
-       o menu voltaria para f_res e a tela mostraria uma grandeza que não é a
-       da curva aberta. */
-    const antes = el.value;
+       o menu voltaria para o padrão e a tela mostraria uma grandeza que não é
+       a da curva aberta. */
+    const antes = el.value || el.dataset.querido || "";
     el.innerHTML = "";
     opcoes.forEach(function (o) {
       const op = document.createElement("option");
       op.value = o.v; op.textContent = o.r; op.dataset.tipo = o.tipo;
       el.appendChild(op);
     });
-    el.value = opcoes.some(function (o) { return o.v === antes; })
-      ? antes : "derivado:f_res";
+    const padrao = PADRAO_OBSERVAVEL[sel];
+    const tem = function (v) {
+      return opcoes.some(function (o) { return o.v === v; });
+    };
+    el.value = tem(antes) ? antes
+      : (tem(padrao) ? padrao : (opcoes[0] || {}).v);
   });
 }
 
@@ -205,6 +217,7 @@ document.addEventListener("DOMContentLoaded", function () {
     b.addEventListener("click", function () { trocaTela(b.dataset.tela); });
   });
   MW.q("#aplicar").addEventListener("click", aplicaPainel);
+  MW.q("#abrir-instalacao").addEventListener("click", MW.manual.abreInstalacao);
 
   CAMPOS_PAINEL.forEach(function (sel) {
     const el = MW.q(sel);
