@@ -17,6 +17,34 @@ body {
   display: flex; flex-direction: column; height: 100vh; overflow: hidden;
 }
 
+/* ----------------------------------------------------------- identidade */
+/* O cabeçalho padrão dos aplicativos científicos da casa — o mesmo do
+   WaveCal-END. As medidas são as de lá (50 px para o IFBA, 45 px para os
+   grupos, 1rem de respiro, empilhamento abaixo de 800 px), para as
+   ferramentas parecerem uma família. As imagens moram em `img/`: esta página
+   não busca nada em servidor de terceiro. */
+#identidade {
+  flex: 0 0 auto; text-align: center; padding: 1rem 14px;
+  background: var(--fundo); border-bottom: 1px solid var(--grade);
+}
+#identidade .header-content {
+  display: flex; align-items: center; justify-content: space-between; gap: 2rem;
+}
+#identidade .header-text { flex: 1 1 0; min-width: 0; }
+#identidade h1 {
+  margin: 0 0 .25rem; font-size: 1.5rem; font-weight: 700; color: var(--tinta);
+}
+#identidade .subtitle {
+  margin: 0; font-size: .85rem; font-weight: 300; color: var(--tinta2);
+}
+#identidade .logo-ifba { height: 50px; width: auto; object-fit: contain; }
+#identidade .header-logos { display: flex; align-items: center; gap: 1.5rem; }
+#identidade .logo-group { height: 45px; width: auto; object-fit: contain; }
+@media (max-width: 800px) {
+  #identidade .header-content { flex-direction: column; gap: 1rem; }
+  #identidade .header-logos { order: 3; }
+}
+
 /* ------------------------------------------------------------ cabeçalho */
 /* `flex-wrap`: numa janela estreita os selos descem para a segunda linha em
    vez de ficarem por cima do nome da última aba. */
@@ -25,7 +53,6 @@ body {
   padding: 8px 14px; background: var(--fundo);
   border-bottom: 1px solid var(--grade); flex: 0 0 auto;
 }
-#barra h1 { font-size: 17px; margin: 0; letter-spacing: .5px; color: var(--seq4); }
 #abas { display: flex; gap: 4px; flex: 1 1 auto; min-width: 0; }
 #abas button {
   border: 1px solid transparent; background: none; cursor: pointer;

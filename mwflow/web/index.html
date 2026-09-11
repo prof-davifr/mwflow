@@ -9,8 +9,25 @@
 </head>
 <body>
 
+<!-- Cabeçalho padrão dos aplicativos científicos da casa, o mesmo do
+     WaveCal-END: IFBA à esquerda, o nome e uma linha do que o programa faz no
+     meio, os grupos de pesquisa à direita. As três imagens moram em `img/`
+     porque esta página não busca nada em servidor de terceiro. -->
+<header id="identidade">
+  <div class="header-content">
+    <img src="img/ifba.png" alt="IFBA" class="logo-ifba">
+    <div class="header-text">
+      <h1>MWFlow: LiteVNA64 Bench Analyzer</h1>
+      <p class="subtitle">Medida contínua, calibração SOLT e curva de calibração do sensor</p>
+    </div>
+    <div class="header-logos">
+      <img src="img/gpend.png" alt="GPEND" class="logo-group">
+      <img src="img/gpsc.png" alt="GPSC" class="logo-group">
+    </div>
+  </div>
+</header>
+
 <header id="barra">
-  <h1>MWFlow</h1>
   <nav id="abas">
     <button data-tela="varredura" class="ativa">Varredura</button>
     <button data-tela="osciloscopio">Osciloscópio</button>
