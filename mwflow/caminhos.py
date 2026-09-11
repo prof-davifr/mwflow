@@ -17,7 +17,10 @@ VENDOR = os.path.join(WEB, "vendor")
 
 SESSOES = os.path.join(RAIZ, "sessoes")
 CALS = os.path.join(RAIZ, "cals")
-BANCO = os.path.join(RAIZ, "mwflow.db")
+# `MWFLOW_BANCO` troca o caminho do banco. Um teste que quer base limpa
+# aponta a variável para um arquivo temporário: apagar o banco da raiz
+# apagaria as curvas de calibração de quem mede nesta bancada.
+BANCO = os.environ.get("MWFLOW_BANCO") or os.path.join(RAIZ, "mwflow.db")
 
 # Link estável do LiteVNA64 desta bancada. O /dev/ttyACM0 muda de número quando
 # outro CDC-ACM entra antes dele; o by-id não muda.

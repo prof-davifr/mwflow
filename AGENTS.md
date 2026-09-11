@@ -38,6 +38,12 @@ Todas estão em `docs/PROTOCOLO.md`, gerado por `python3 -m mwflow.vna.sonda`.
   expressão que chamou `setData` ou `redraw` devolve zero, e não é defeito.
 - **`np.full_like(f, valor_complexo)`** com `f` real descarta a parte
   imaginária, calado. Use `np.full(f.shape, valor)`.
+- **Teste que quer base limpa NÃO apaga `mwflow.db` da raiz.** Aquele arquivo é
+  o banco da bancada: as curvas de calibração e o índice das sessões moram nele
+  e ele não está no git. Aponte `MWFLOW_BANCO` para um arquivo temporário antes
+  do primeiro `import mwflow` — `caminhos.BANCO` é resolvido no import — e
+  apague só esse. O `testes/teste_ponta_a_ponta.py` faz assim, e confere no
+  primeiro passo que está no temporário.
 
 ## Invariantes do motor
 

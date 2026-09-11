@@ -17,9 +17,18 @@ import json
 import os
 import struct
 import sys
+import tempfile
 import time
 
 import numpy as np
+
+# O banco deste teste NÃO é o da bancada. O teste começa apagando o banco para
+# não depender de corrida anterior, e apagar `mwflow.db` da raiz apagaria as
+# curvas de calibração de quem estava medindo. A variável tem de ser escrita
+# ANTES do primeiro import de `mwflow`: `caminhos.BANCO` é resolvido no import.
+BANCO_TESTE = os.path.join(tempfile.gettempdir(),
+                           "mwflow_teste_%d.db" % os.getpid())
+os.environ["MWFLOW_BANCO"] = BANCO_TESTE
 
 _falhas = []
 
@@ -83,15 +92,15 @@ async def principal():
     import uvicorn
     import websockets
 
-    from mwflow.caminhos import RAIZ
+    from mwflow.caminhos import BANCO
     from mwflow.motor import Motor
     from mwflow.servidor import cria_app
 
     # base limpa, para o teste não depender de corridas anteriores
-    base = os.path.join(RAIZ, "mwflow.db")
+    exige(BANCO == BANCO_TESTE, "o teste usa o banco temporário", BANCO)
     for suf in ("", "-wal", "-shm"):
         try:
-            os.remove(base + suf)
+            os.remove(BANCO_TESTE + suf)
         except OSError:
             pass
 
@@ -294,6 +303,11 @@ async def principal():
         servidor.should_exit = True
         await asyncio.sleep(0.5)
         t.cancel()
+        for suf in ("", "-wal", "-shm"):
+            try:
+                os.remove(BANCO_TESTE + suf)
+            except OSError:
+                pass
 
     print()
     if _falhas:
