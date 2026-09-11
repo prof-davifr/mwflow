@@ -116,8 +116,10 @@ O que morde deste lado:
   `MW.manual.orfaos()` lista os `data-termo` sem verbete.
 - **O cabeçalho `#identidade` é o padrão dos aplicativos científicos da casa**,
   o mesmo do WaveCal-END: IFBA à esquerda, nome e uma linha do que o programa
-  faz no meio, GPEND e GPSC à direita, 50 px e 45 px de altura. Ele não é
-  decoração de uma tela: muda junto com os outros aplicativos, e não sozinho.
+  faz no meio, GPEND e GPSC à direita, 50 px e 45 px de altura. As medidas vão
+  em **pixel**, nunca em `rem`: a fonte raiz é 16 px aqui e 13 px no LightFlow,
+  e o mesmo `rem` daria dois cabeçalhos diferentes. Ele não é decoração de uma
+  tela: muda junto com os outros aplicativos, e não sozinho.
 - **A instalação é da janela, não de uma tela.** Ela mora no diálogo
   `#dlg-instalacao`, que o botão Instalação do cabeçalho e o cartão de escolha
   do aparelho abrem por `MW.manual.abreInstalacao()`. Quem precisa dela ainda

@@ -19,29 +19,29 @@ body {
 
 /* ----------------------------------------------------------- identidade */
 /* O cabeçalho padrão dos aplicativos científicos da casa — o mesmo do
-   WaveCal-END. As medidas são as de lá (50 px para o IFBA, 45 px para os
-   grupos, 1rem de respiro, empilhamento abaixo de 800 px), para as
-   ferramentas parecerem uma família. As imagens moram em `img/`: esta página
-   não busca nada em servidor de terceiro. */
+   WaveCal-END. As medidas são as de lá, e vão em PIXEL de propósito: o `rem`
+   segue a fonte raiz, que é 16 px aqui e 13 px no LightFlow, e o mesmo `rem`
+   daria dois cabeçalhos de tamanhos diferentes. As imagens moram em `img/`:
+   esta página não busca nada em servidor de terceiro. */
 #identidade {
-  flex: 0 0 auto; text-align: center; padding: 1rem 14px;
+  flex: 0 0 auto; text-align: center; padding: 16px 14px;
   background: var(--fundo); border-bottom: 1px solid var(--grade);
 }
 #identidade .header-content {
-  display: flex; align-items: center; justify-content: space-between; gap: 2rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 32px;
 }
 #identidade .header-text { flex: 1 1 0; min-width: 0; }
 #identidade h1 {
-  margin: 0 0 .25rem; font-size: 1.5rem; font-weight: 700; color: var(--tinta);
+  margin: 0 0 4px; font-size: 24px; font-weight: 700; color: var(--tinta);
 }
 #identidade .subtitle {
-  margin: 0; font-size: .85rem; font-weight: 300; color: var(--tinta2);
+  margin: 0; font-size: 13.6px; font-weight: 300; color: var(--tinta2);
 }
 #identidade .logo-ifba { height: 50px; width: auto; object-fit: contain; }
-#identidade .header-logos { display: flex; align-items: center; gap: 1.5rem; }
+#identidade .header-logos { display: flex; align-items: center; gap: 24px; }
 #identidade .logo-group { height: 45px; width: auto; object-fit: contain; }
 @media (max-width: 800px) {
-  #identidade .header-content { flex-direction: column; gap: 1rem; }
+  #identidade .header-content { flex-direction: column; gap: 16px; }
   #identidade .header-logos { order: 3; }
 }
 
