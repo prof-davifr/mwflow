@@ -120,6 +120,12 @@ O que morde deste lado:
   em **pixel**, nunca em `rem`: a fonte raiz é 16 px aqui e 13 px no LightFlow,
   e o mesmo `rem` daria dois cabeçalhos diferentes. Ele não é decoração de uma
   tela: muda junto com os outros aplicativos, e não sozinho.
+- **O cabeçalho abre recolhido** (`#identidade.compacto`): uma faixa de 28 px
+  com o nome, o IFBA em 22 px e GPEND e GPSC em 20 px, sem o subtítulo. Um
+  clique (ou Enter) abre o cabeçalho inteiro, e a escolha fica no
+  `localStorage` (`mw.cabecalho`; `lf.cabecalho` no LightFlow,
+  `wavecal.cabecalho` no WaveCal-END). Depois da troca a página dispara o
+  `resize` da janela, que é o que faz as telas medirem a altura de novo.
 - **A instalação é da janela, não de uma tela.** Ela mora no diálogo
   `#dlg-instalacao`, que o botão Instalação do cabeçalho e o cartão de escolha
   do aparelho abrem por `MW.manual.abreInstalacao()`. Quem precisa dela ainda

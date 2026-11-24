@@ -212,6 +212,37 @@ function preencheObservaveis(dados) {
   });
 }
 
+/* O cabeçalho da casa abre recolhido numa faixa, para os gráficos ficarem com
+   a altura; um clique (ou Enter) abre e fecha, e a escolha fica guardada. O
+   LightFlow e o WaveCal-END fazem o mesmo. */
+const CHAVE_CABECALHO = "mw.cabecalho";
+
+function mostraCabecalho() {
+  const el = MW.q("#identidade");
+  const cheio = localStorage.getItem(CHAVE_CABECALHO) === "cheio";
+  el.classList.toggle("compacto", !cheio);
+  el.setAttribute("aria-expanded", String(cheio));
+  el.title = cheio ? "Clique para recolher o cabeçalho" : "Clique para ver o cabeçalho inteiro";
+  /* As telas tiram a altura do que sobra e escutam o `resize` da janela. */
+  window.dispatchEvent(new Event("resize"));
+}
+
+function ligaCabecalho() {
+  const el = MW.q("#identidade");
+  el.setAttribute("role", "button");
+  el.tabIndex = 0;
+  const troca = function () {
+    const cheio = localStorage.getItem(CHAVE_CABECALHO) === "cheio";
+    localStorage.setItem(CHAVE_CABECALHO, cheio ? "compacto" : "cheio");
+    mostraCabecalho();
+  };
+  el.addEventListener("click", troca);
+  el.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); troca(); }
+  });
+  mostraCabecalho();
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   MW.qq("#abas button").forEach(function (b) {
     b.addEventListener("click", function () { trocaTela(b.dataset.tela); });
@@ -243,6 +274,7 @@ document.addEventListener("DOMContentLoaded", function () {
   MW.espectrograma.inicia();
   MW.curva.inicia();
   MW.calibracao.inicia();
+  ligaCabecalho();
 
   MW.ws.em("estado", mostraEstado);
   MW.ws.em("erro", function (m) { MW.mensagem("erro — " + m.msg); });

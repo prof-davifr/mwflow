@@ -44,6 +44,18 @@ body {
   #identidade .header-content { flex-direction: column; gap: 16px; }
   #identidade .header-logos { order: 3; }
 }
+/* Recolhido, que é o padrão: uma faixa de 28 px com o nome e as três marcas
+   pequenas, para os gráficos ficarem com a altura. Um clique abre o cabeçalho
+   inteiro e a escolha fica guardada. O LightFlow e o WaveCal-END recolhem do
+   mesmo jeito e com os mesmos pixels; os três mudam juntos. */
+#identidade { cursor: pointer; }
+#identidade.compacto { padding: 3px 14px; }
+#identidade.compacto .header-content { flex-direction: row; gap: 16px; }
+#identidade.compacto .logo-ifba { height: 22px; }
+#identidade.compacto .logo-group { height: 20px; }
+#identidade.compacto .header-logos { gap: 12px; order: 0; }
+#identidade.compacto h1 { margin: 0; font-size: 14px; }
+#identidade.compacto .subtitle { display: none; }
 
 /* ------------------------------------------------------------ cabeçalho */
 /* `flex-wrap`: numa janela estreita os selos descem para a segunda linha em
